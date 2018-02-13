@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+  merite:
+    image: merite
+    build: .
+    environment:
+      NODE_ENV: development
+    ports:
+      - 3002:3002
+      - 1112:1112
+      - 9229:9229
+    command: node --inspect=0.0.0.0:9229 webpack.config.js

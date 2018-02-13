@@ -1,0 +1,11 @@
+version: '2.1'
+
+services:
+  merite:
+    image: merite
+    build: .
+    environment:
+      NODE_ENV: production
+    ports:
+      - 3002:3002
+      - 1112:1112
