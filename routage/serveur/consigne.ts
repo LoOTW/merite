@@ -71,7 +71,6 @@ export function copieTableConsigne(utilisateursParDomaine: PopulationParDomaineM
     return tableCopie;
 }
 
-
 function shuffle(a:Array<[Identifiant<'sommet'>,Identifiant<'utilisateur'>,Mot]>) {
     var j, x, i;
     for (i = a.length - 1; i > 0; i--) {
@@ -133,24 +132,26 @@ export function remplirTableCible(utilisateursParDomaine: PopulationParDomaineMu
         });
     });
     shuffle(reste); //comme attribution se fait ensuite dans l'ordre, pour mélanger un peu
+    
+    //creation de liste de cible deja permutees pr eviter la boucle infinie --> 0 si pas encore, 1 sinon
+    var dejaPermutes : Array<Array<Number>> = [];
+    for (var i=0; i<configuration.getNDomaine();i++){
+        var l = Array.apply(null, Array(configuration.getNbUtilisateursParDomaine()[i])).map(Number.prototype.valueOf,0);
+
+        dejaPermutes.push(l);
+    }
+
     for(var i=0;i<reste.length;i++){ //reste.length == nb util dans dernier dom sans consigne
         if(reste[i][0].val === domFinalID.val){
-            console.log("PERMUTATION  ");
-            console.log(reste);
-            console.log(domFinalID.val);
-            //Permutation avec un autre user
-            var nbUtilActuel = parseInt(reste[i][1].val.substring(reste[i][1].val.lastIndexOf("-")+1));
-            //dom a permuter : choix aleatoire jusqua diffrent de dom actuel
+            //dom a permuter : choix aleatoire jusqua different de dom actuel ET different d'un user qui a déjà été permuté
             nbAleatDom = nombreAleatoire(configuration.getNDomaine(),dom);
-            randomDomId= creerIdentifiant('sommet',"DOM-"+nbAleatDom);
             nbAleatUtil = getRandomInt(configuration.getNbUtilisateursParDomaine()[nbAleatDom]);
-            randomUtilId = creerIdentifiant('utilisateur',"UTIL-DOM-"+nbAleatDom+"-"+nbAleatUtil);
-            while(cible[nbAleatDom][nbAleatUtil][0].ID.val===domFinalID.val){
+            //Si cible avec laquelle on veut échanger a comme domaine celui du dernier, on doit de nouveau tirer aléatoirement
+            while( dejaPermutes[nbAleatDom][nbAleatUtil]===1 || cible[nbAleatDom][nbAleatUtil][0].ID.val===domFinalID.val){
                 nbAleatDom = nombreAleatoire(configuration.getNDomaine(),dom); //nbAleat different de dom
-                randomDomId= creerIdentifiant('sommet',"DOM-"+nbAleatDom);
                 nbAleatUtil = getRandomInt(configuration.getNbUtilisateursParDomaine()[nbAleatDom]);
-                randomUtilId = creerIdentifiant('utilisateur',"UTIL-DOM-"+nbAleatDom+"-"+nbAleatUtil);
-            };         
+            };            
+            dejaPermutes[nbAleatDom][nbAleatUtil]=1;
             row.push(cible[nbAleatDom][nbAleatUtil]);                                
             cible[nbAleatDom][nbAleatUtil]=[anneau.noeud(reste[i][0]).centre,
                                             utilisateursParDomaine.utilisateur(reste[i][0],reste[i][1]),
